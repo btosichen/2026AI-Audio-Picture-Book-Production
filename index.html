@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小小導演夢工廠 - 親子影音繪本營</title>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f9ff;
+            touch-action: manipulation;
+        }
+        .animate-bounce-slow {
+            animation: bounce 3s infinite;
+        }
+        .animate-spin-slow {
+            animation: spin 3s linear infinite;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom scrollbar for cuteness */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        @keyframes spin {
+            from { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) translateY(-50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // ------------------------------------------------------------------
+        // ★ 設定區：老師請在這裡填入 Google Apps Script 的網址
+        // 若沒有填寫，學生只能使用「下載檔案」功能
+        // ------------------------------------------------------------------
+        const GOOGLE_SCRIPT_URL = ""; 
+        // 例如: "https://script.google.com/macros/s/AKfycbx.../exec"
+
+        // --- Inline Icons ---
+        const IconBase = ({ children, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const BookOpen = (props) => ( <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase> );
+        const Music = (props) => ( <IconBase {...props}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></IconBase> );
+        const Palette = (props) => ( <IconBase {...props}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></IconBase> );
+        const Play = (props) => ( <IconBase {...props}><polygon points="5 3 19 12 5 21 5 3"/></IconBase> );
+        const ChevronRight = (props) => ( <IconBase {...props}><path d="m9 18 6-6-6-6"/></IconBase> );
+        const ChevronLeft = (props) => ( <IconBase {...props}><path d="m15 18-6-6 6-6"/></IconBase> );
+        const CheckCircle = (props) => ( <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase> );
+        const Sparkles = (props) => ( <IconBase {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></IconBase> );
+        const Home = (props) => ( <IconBase {...props}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconBase> );
+        const Mic = (props) => ( <IconBase {...props}><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="23"/><line x1="8" x2="16" y1="23" y2="23"/></IconBase> );
+        const Clapperboard = (props) => ( <IconBase {...props}><rect width="18" height="14" x="3" y="7" rx="2" ry="2"/><path d="M7 15h10"/><path d="M7 11h2"/><path d="M13 11h4"/><path d="M3 7l2-4h14l2 4"/><path d="M7 3l2 4"/><path d="M13 3l2 4"/><path d="M13 7h-2"/></IconBase> );
+        const Star = (props) => ( <IconBase {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase> );
+        const UploadCloud = (props) => ( <IconBase {...props}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconBase> );
+        const Download = (props) => ( <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></IconBase> );
+
+
+        // Component: Step 1 - Introduction / Deconstruction
+        const Deconstruction = ({ onNext }) => {
+            const [revealed, setRevealed] = useState({ story: false, visual: false, sound: false });
+            
+            const handleReveal = (part) => {
+                setRevealed(prev => ({ ...prev, [part]: true }));
+            };
+
+            const allRevealed = revealed.story && revealed.visual && revealed.sound;
+
+            return (
+                <div className="flex flex-col items-center justify-center space-y-8 animate-fade-in">
+                    <div className="text-center">
+                        <h2 className="text-3xl font-bold text-blue-600 mb-2">影音繪本的秘密食譜</h2>
+                        <p className="text-gray-600">點擊下方的寶箱，看看一本好聽又好看的書由什麼組成？</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl px-4">
+                        {/* Story Card */}
+                        <div onClick={() => handleReveal('story')} className={`cursor-pointer p-6 rounded-2xl border-4 ${revealed.story ? 'bg-yellow-100 border-yellow-400' : 'bg-white border-gray-200'} card-hover flex flex-col items-center text-center h-64 justify-center`}>
+                            {revealed.story ? ( <> <BookOpen size={48} className="text-yellow-600 mb-4" /> <h3 className="text-xl font-bold text-yellow-800">1. 精彩的故事</h3> <p className="text-sm text-yellow-700 mt-2">劇本是靈魂！<br/>要有主角和冒險。</p> </> ) : ( <> <span className="text-4xl">📝</span> <p className="font-bold text-gray-400 mt-2">點我解鎖</p> </> )}
+                        </div>
+                        {/* Visual Card */}
+                        <div onClick={() => handleReveal('visual')} className={`cursor-pointer p-6 rounded-2xl border-4 ${revealed.visual ? 'bg-pink-100 border-pink-400' : 'bg-white border-gray-200'} card-hover flex flex-col items-center text-center h-64 justify-center`}>
+                            {revealed.visual ? ( <> <Palette size={48} className="text-pink-600 mb-4" /> <h3 className="text-xl font-bold text-pink-800">2. 漂亮的畫面</h3> <p className="text-sm text-pink-700 mt-2">插畫與風格！<br/>吸引大家的目光。</p> </> ) : ( <> <span className="text-4xl">🎨</span> <p className="font-bold text-gray-400 mt-2">點我解鎖</p> </> )}
+                        </div>
+                        {/* Sound Card */}
+                        <div onClick={() => handleReveal('sound')} className={`cursor-pointer p-6 rounded-2xl border-4 ${revealed.sound ? 'bg-blue-100 border-blue-400' : 'bg-white border-gray-200'} card-hover flex flex-col items-center text-center h-64 justify-center`}>
+                            {revealed.sound ? ( <> <Music size={48} className="text-blue-600 mb-4" /> <h3 className="text-xl font-bold text-blue-800">3. 動聽的聲音</h3> <p className="text-sm text-blue-700 mt-2">配音與音樂！<br/>讓故事活起來。</p> </> ) : ( <> <span className="text-4xl">🎵</span> <p className="font-bold text-gray-400 mt-2">點我解鎖</p> </> )}
+                        </div>
+                    </div>
+
+                    {allRevealed && (
+                        <div className="mt-8 animate-bounce">
+                            <button onClick={onNext} className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg transform transition hover:scale-105 flex items-center">
+                                下一關：來寫故事吧！ <ChevronRight className="ml-2" />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Component: Step 2 - Story Builder (Enhanced with Pagination and New Fields)
+        const StoryBuilder = ({ onNext, onBack, setStoryData, initialData }) => {
+            const [inputs, setInputs] = useState(initialData);
+            const [page, setPage] = useState(0); // 0: Characters, 1: Plot & World
+
+            const handleChange = (e) => {
+                setInputs({ ...inputs, [e.target.name]: e.target.value });
+            };
+
+            const handleFinish = () => {
+                setStoryData(inputs);
+                onNext();
+            };
+
+            // Page 0 Validation
+            const page0Complete = inputs.storyteller && inputs.hero;
+            // Page 1 Validation
+            const page1Complete = inputs.place && inputs.item && inputs.action;
+
+            return (
+                <div className="max-w-3xl mx-auto bg-white p-8 rounded-3xl shadow-xl">
+                    <div className="flex justify-between items-center mb-6">
+                        <button onClick={onBack} className="text-gray-400 hover:text-gray-600 font-bold flex items-center">
+                             <ChevronLeft size={20} /> 返回
+                        </button>
+                        <h2 className="text-2xl font-bold text-center text-purple-600 flex-1">📝 故事製造機 ({page + 1}/2)</h2>
+                        <div className="w-16"></div> {/* Spacer */}
+                    </div>
+
+                    {page === 0 ? (
+                        <div className="space-y-6 animate-fade-in">
+                            <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                                <h3 className="font-bold text-purple-800 mb-4 border-b border-purple-200 pb-2">🧙‍♂️ 角色設定篇</h3>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-bold mb-2">1. 說故事的人 (你的名字)</label>
+                                        <input type="text" name="storyteller" value={inputs.storyteller} onChange={handleChange} className="w-full p-3 border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:outline-none bg-white" placeholder="例：王小明" />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-gray-700 font-bold mb-2">2. 故事主角是誰？</label>
+                                            <input type="text" name="hero" value={inputs.hero} onChange={handleChange} className="w-full p-3 border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:outline-none bg-white" placeholder="例：勇敢的小恐龍" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-bold mb-2">3. 他的好夥伴 (配角)？</label>
+                                            <input type="text" name="sidekick" value={inputs.sidekick} onChange={handleChange} className="w-full p-3 border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:outline-none bg-white" placeholder="例：愛唱歌的機器人" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <button onClick={() => setPage(1)} disabled={!page0Complete} className={`py-2 px-6 rounded-full font-bold shadow-md transition ${page0Complete ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-gray-200 text-gray-400'}`}>
+                                    下一頁 <ChevronRight className="inline ml-1" />
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-6 animate-fade-in">
+                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <h3 className="font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">🌍 世界與冒險篇</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-bold mb-2">4. 在哪裡探險？</label>
+                                        <input type="text" name="place" value={inputs.place} onChange={handleChange} className="w-full p-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none bg-white" placeholder="例：充滿糖果的森林" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-bold mb-2">5. 背景有什麼特別的？</label>
+                                        <input type="text" name="setting_detail" value={inputs.setting_detail} onChange={handleChange} className="w-full p-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none bg-white" placeholder="例：天空是綠色的" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-bold mb-2">6. 發現了什麼寶物？</label>
+                                        <input type="text" name="item" value={inputs.item} onChange={handleChange} className="w-full p-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none bg-white" placeholder="例：發光的寶石" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-bold mb-2">7. 最後做了什麼？</label>
+                                        <input type="text" name="action" value={inputs.action} onChange={handleChange} className="w-full p-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none bg-white" placeholder="例：開心地跳舞" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-gray-700 font-bold mb-2">8. 這個故事給我的啟發？</label>
+                                    <textarea name="inspiration" value={inputs.inspiration} onChange={handleChange} className="w-full p-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none bg-white h-20" placeholder="例：只要勇敢嘗試，就能發現驚喜！"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                <button onClick={() => setPage(0)} className="text-gray-500 font-bold px-4 py-2 hover:bg-gray-100 rounded-lg">
+                                    <ChevronLeft className="inline mr-1" /> 上一步
+                                </button>
+                                <button onClick={handleFinish} disabled={!page1Complete} className={`py-3 px-8 rounded-full text-xl font-bold shadow-lg transform transition ${page1Complete ? 'bg-green-500 text-white hover:scale-105 hover:bg-green-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
+                                    故事完成！去配樂 <ChevronRight className="inline ml-1" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Component: Step 3 - Sound Studio
+        const SoundStudio = ({ onNext, onBack, storyData }) => {
+            const [mood, setMood] = useState(null); // 'happy', 'scary', 'action'
+            const [isPlaying, setIsPlaying] = useState(false);
+
+            const playMood = (selectedMood) => {
+                setMood(selectedMood);
+                setIsPlaying(true);
+            };
+
+            const getMoodStyle = () => {
+                switch(mood) {
+                    case 'happy': return 'bg-yellow-100 border-yellow-400';
+                    case 'scary': return 'bg-indigo-900 border-indigo-700 text-white';
+                    case 'action': return 'bg-red-100 border-red-400';
+                    default: return 'bg-gray-50 border-gray-200';
+                }
+            };
+            
+            const getMoodIcon = () => {
+                switch(mood) {
+                    case 'happy': return '🌞';
+                    case 'scary': return '👻';
+                    case 'action': return '🔥';
+                    default: return '🎵';
+                }
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto">
+                    <div className="flex justify-between items-center mb-4">
+                         <button onClick={onBack} className="text-gray-400 hover:text-gray-600 font-bold flex items-center">
+                             <ChevronLeft size={20} /> 修改故事
+                        </button>
+                    </div>
+                    
+                    <h2 className="text-2xl font-bold text-center text-blue-600 mb-2">🎧 聲音魔法師</h2>
+                    <p className="text-center text-gray-600 mb-8">幫 <b>{storyData.hero}</b> 的故事選一個適合的背景音樂吧！</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                        {/* Control Panel */}
+                        <div className="bg-white p-6 rounded-3xl shadow-lg space-y-4">
+                            <h3 className="font-bold text-gray-700 mb-4 flex items-center"><Mic size={20} className="mr-2"/> 選擇背景音樂 (BGM)</h3>
+                            <button onClick={() => playMood('happy')} className="w-full flex items-center justify-between p-4 rounded-xl bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition"> <span className="font-bold text-yellow-800">😊 輕鬆愉快的音樂</span> <Play size={20} className="text-yellow-600"/> </button>
+                            <button onClick={() => playMood('scary')} className="w-full flex items-center justify-between p-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition"> <span className="font-bold text-indigo-800">😨 神秘緊張的音樂</span> <Play size={20} className="text-indigo-600"/> </button>
+                            <button onClick={() => playMood('action')} className="w-full flex items-center justify-between p-4 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 transition"> <span className="font-bold text-red-800">🏃 熱血冒險的音樂</span> <Play size={20} className="text-red-600"/> </button>
+                        </div>
+
+                        {/* Preview Screen */}
+                        <div className={`p-8 rounded-3xl border-4 transition-all duration-500 flex flex-col items-center justify-center relative overflow-hidden ${getMoodStyle()} min-h-[300px]`}>
+                            {mood && ( <div className="absolute inset-0 opacity-10 pointer-events-none flex flex-wrap content-center justify-center gap-8"> {Array(20).fill(getMoodIcon()).map((icon, i) => ( <span key={i} className="text-4xl animate-pulse">{icon}</span> ))} </div> )}
+                            <div className="z-10 text-center w-full">
+                                <h3 className={`text-xl font-bold mb-4 ${mood === 'scary' ? 'text-white' : 'text-gray-800'}`}> {storyData.hero} 的大冒險 </h3>
+                                <div className={`text-lg p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm ${mood === 'scary' ? 'text-gray-900' : 'text-gray-800'} text-left`}>
+                                    <p className="text-sm text-gray-500 mb-2">作者：{storyData.storyteller}</p>
+                                    <p>
+                                        很久以前，<b>{storyData.hero}</b> 和好朋友 <b>{storyData.sidekick || '神祕人'}</b> 
+                                        來到 <b>{storyData.place}</b>。
+                                        這裡 <b>{storyData.setting_detail}</b>，非常特別。
+                                        <br/><br/>
+                                        突然！他們發現了 <b>{storyData.item}</b>！
+                                        於是他興奮地 <b>{storyData.action}</b>！
+                                    </p>
+                                </div>
+                                <div className="mt-4">
+                                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${ mood === 'happy' ? 'bg-yellow-200 text-yellow-800' : mood === 'scary' ? 'bg-indigo-700 text-indigo-100' : mood === 'action' ? 'bg-red-200 text-red-800' : 'bg-gray-200 text-gray-600' }`}> {mood ? `正在播放：${mood === 'happy' ? '快樂' : mood === 'scary' ? '懸疑' : '熱血'}氛圍` : '請選擇音樂...'} </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 text-center">
+                        <button disabled={!mood} onClick={() => onNext(mood)} className={`py-3 px-8 rounded-full text-xl font-bold shadow-lg transform transition ${mood ? 'bg-blue-600 text-white hover:scale-105 hover:bg-blue-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
+                            完成製作！ <CheckCircle className="inline ml-1" />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Component: Step 4 - Conclusion & Export
+        const Conclusion = ({ onReset, storyData, mood }) => {
+            const [uploading, setUploading] = useState(false);
+            const [uploadStatus, setUploadStatus] = useState(null); // 'success', 'error', null
+
+            // 1. Download as CSV (Client-side Backup)
+            const downloadCSV = () => {
+                const headers = ["Storyteller", "Hero", "Sidekick", "Place", "SettingDetail", "Item", "Action", "Inspiration", "Mood", "Date"];
+                const values = [
+                    storyData.storyteller,
+                    storyData.hero,
+                    storyData.sidekick,
+                    storyData.place,
+                    storyData.setting_detail,
+                    storyData.item,
+                    storyData.action,
+                    storyData.inspiration,
+                    mood,
+                    new Date().toLocaleString()
+                ];
+                
+                // Escape quotes for CSV
+                const csvRow = values.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(",");
+                const csvContent = "\uFEFF" + headers.join(",") + "\n" + csvRow; // Add BOM for Excel Chinese support
+
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", `${storyData.storyteller}_的故事.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            // 2. Upload to Google Sheets (via Google Apps Script)
+            const uploadToGoogle = async () => {
+                if (!GOOGLE_SCRIPT_URL) {
+                    alert("請先在程式碼中設定 GOOGLE_SCRIPT_URL，才能使用雲端上傳功能喔！\n目前請使用「下載檔案」功能來備份。");
+                    return;
+                }
+
+                setUploading(true);
+                setUploadStatus(null);
+
+                const data = {
+                    ...storyData,
+                    mood: mood,
+                    date: new Date().toLocaleString()
+                };
+
+                try {
+                    // Using no-cors mode because GAS doesn't support CORS headers easily for simple setups
+                    // This means we won't get a readable response JSON, but the request will go through.
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', 
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    setUploadStatus('success');
+                } catch (error) {
+                    console.error("Upload error:", error);
+                    setUploadStatus('error');
+                } finally {
+                    setUploading(false);
+                }
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center animate-fade-in max-w-2xl mx-auto text-center">
+                    <div className="mb-6 relative">
+                        <Star size={80} className="text-yellow-400 absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-spin-slow" />
+                        <Clapperboard size={120} className="text-gray-800 relative z-10" />
+                    </div>
+                    
+                    <h2 className="text-4xl font-bold text-gray-800 mb-4">恭喜！你是小小導演了！</h2>
+                    <p className="text-xl text-gray-600 mb-8">
+                        故事作者：<span className="text-blue-600 font-bold">{storyData.storyteller}</span><br/>
+                        你的作品已經完成囉！
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
+                        <button onClick={downloadCSV} className="flex flex-col items-center justify-center p-6 bg-white border-2 border-green-200 rounded-2xl hover:bg-green-50 hover:border-green-400 transition shadow-sm group">
+                            <Download size={40} className="text-green-600 mb-2 group-hover:scale-110 transition" />
+                            <span className="font-bold text-green-800">下載檔案 (CSV)</span>
+                            <span className="text-xs text-green-600 mt-1">存到這台電腦備份</span>
+                        </button>
+
+                        <button onClick={uploadToGoogle} disabled={uploading || uploadStatus === 'success'} className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition shadow-sm group ${uploadStatus === 'success' ? 'bg-blue-100 border-blue-400' : 'bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-400'}`}>
+                            {uploadStatus === 'success' ? <CheckCircle size={40} className="text-blue-600 mb-2"/> : <UploadCloud size={40} className={`text-blue-600 mb-2 ${uploading ? 'animate-bounce' : 'group-hover:scale-110 transition'}`} />}
+                            <span className="font-bold text-blue-800">
+                                {uploading ? '上傳中...' : uploadStatus === 'success' ? '上傳成功！' : '上傳到雲端'}
+                            </span>
+                            <span className="text-xs text-blue-600 mt-1">傳給老師的試算表</span>
+                        </button>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl shadow-lg w-full text-left mb-8">
+                        <h3 className="font-bold text-lg border-b pb-2 mb-4">🎬 接下來你可以怎麼做？</h3>
+                        <ul className="space-y-3">
+                            <li className="flex items-center text-gray-700"> <span className="bg-green-100 text-green-600 p-2 rounded-full mr-3 text-xs">1</span> 找爸爸媽媽一起讀出這個故事。 </li>
+                            <li className="flex items-center text-gray-700"> <span className="bg-green-100 text-green-600 p-2 rounded-full mr-3 text-xs">2</span> 用這張表單的內容，畫出故事的每一頁。 </li>
+                            <li className="flex items-center text-gray-700"> <span className="bg-green-100 text-green-600 p-2 rounded-full mr-3 text-xs">3</span> 加上剛剛選的音樂，錄成影片！ </li>
+                        </ul>
+                    </div>
+
+                    <button onClick={onReset} className="bg-gray-800 hover:bg-black text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transform transition hover:scale-105 flex items-center">
+                        <Home className="mr-2" /> 再玩一次
+                    </button>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [step, setStep] = useState(0); // 0:Intro, 1:Deconstruction, 2:Story, 3:Sound, 4:Conclusion
+            const [storyData, setStoryData] = useState({
+                storyteller: '',
+                hero: '',
+                sidekick: '',
+                place: '',
+                setting_detail: '',
+                item: '',
+                action: '',
+                inspiration: ''
+            });
+            const [finalMood, setFinalMood] = useState('');
+
+            const nextStep = () => setStep(s => s + 1);
+            const prevStep = () => setStep(s => s - 1);
+            
+            const goToConclusion = (mood) => {
+                setFinalMood(mood);
+                setStep(4);
+            };
+
+            const resetApp = () => {
+                setStep(0);
+                setStoryData({ storyteller: '', hero: '', sidekick: '', place: '', setting_detail: '', item: '', action: '', inspiration: '' });
+                setFinalMood('');
+            };
+
+            const renderStep = () => {
+                switch(step) {
+                    case 0:
+                        return (
+                            <div className="flex flex-col items-center justify-center h-full text-center space-y-8 animate-fade-in py-12">
+                                <div className="bg-white p-4 rounded-full shadow-2xl mb-4"> <span className="text-6xl">🎥</span> </div>
+                                <h1 className="text-5xl font-bold text-gray-800 tracking-tight"> 小小導演<span className="text-blue-500">夢工廠</span> </h1>
+                                <p className="text-xl text-gray-600 max-w-lg"> 歡迎來到親子影音繪本營！<br/> 準備好創作屬於你的第一個動態故事了嗎？ </p>
+                                <button onClick={nextStep} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full text-2xl shadow-xl transform transition hover:scale-110 flex items-center"> 開始冒險 <Sparkles className="ml-2" /> </button>
+                            </div>
+                        );
+                    case 1: return <Deconstruction onNext={nextStep} />;
+                    case 2: return <StoryBuilder onNext={nextStep} onBack={prevStep} setStoryData={setStoryData} initialData={storyData} />;
+                    case 3: return <SoundStudio onNext={goToConclusion} onBack={prevStep} storyData={storyData} />;
+                    case 4: return <Conclusion onReset={resetApp} storyData={storyData} mood={finalMood} />;
+                    default: return <div>Error</div>;
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col">
+                    <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
+                        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+                            <div className="flex items-center space-x-2 font-bold text-xl text-gray-800">
+                                <Clapperboard className="text-blue-600" /> <span>DirectorStudio</span>
+                            </div>
+                            <div className="flex space-x-2"> {[0, 1, 2, 3, 4].map(i => ( <div key={i} className={`h-2 w-8 rounded-full transition-all duration-300 ${step >= i ? 'bg-blue-500' : 'bg-gray-200'}`} /> ))} </div>
+                        </div>
+                    </header>
+                    <main className="flex-grow container mx-auto px-4 py-8 flex flex-col justify-center"> {renderStep()} </main>
+                    <footer className="text-center py-6 text-gray-400 text-sm"> &copy; 2026 親子影音繪本營隊教材 | Designed for Kids & Parents </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
