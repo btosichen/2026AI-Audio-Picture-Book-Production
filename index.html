@@ -15,10 +15,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- 放大核心設定 --- */
+        /* --- 放大核心設定 (已調整為原先的 80%) --- */
         html {
-            /* 將基礎字體設為 26px (預設約 16px)，這會讓所有使用 rem 單位的 Tailwind 樣式自動放大約 1.6 倍 */
-            font-size: 26px;
+            /* 26px * 0.8 ≈ 21px */
+            font-size: 21px;
         }
 
         body {
@@ -41,14 +41,14 @@
         }
         /* Custom scrollbar for cuteness */
         ::-webkit-scrollbar {
-            width: 12px; /* Scrollbar 也加大 */
+            width: 10px; /* 稍微縮小卷軸寬度 */
         }
         ::-webkit-scrollbar-track {
             background: #f1f1f1; 
         }
         ::-webkit-scrollbar-thumb {
             background: #888; 
-            border-radius: 6px;
+            border-radius: 5px;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #555; 
@@ -66,14 +66,12 @@
         const { useState, useEffect } = React;
 
         // ------------------------------------------------------------------
-        // ★ 設定區：老師請在這裡填入 Google Apps Script 的網址
-        // 若沒有填寫，學生只能使用「下載檔案」功能
+        // ★ 設定區：Google Apps Script 網址 (已更新)
         // ------------------------------------------------------------------
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUWs0tQ2wP4PID3Wd3lZlpihsXl9tVeRZl68KAHSLgK1taxVP_m6pAzAwYmjc0uKfs/exec"; 
-        // 例如: "https://script.google.com/macros/s/AKfycbx.../exec"
 
-        // --- Inline Icons (Base size increased from 24 to 40 for visibility) ---
-        const IconBase = ({ children, size = 40, className = "" }) => (
+        // --- Inline Icons (Base size adjusted to 32) ---
+        const IconBase = ({ children, size = 32, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 {children}
             </svg>
@@ -115,22 +113,22 @@
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-7xl px-4">
                         {/* Story Card */}
                         <div onClick={() => handleReveal('story')} className={`cursor-pointer p-8 rounded-3xl border-4 ${revealed.story ? 'bg-yellow-100 border-yellow-400' : 'bg-white border-gray-200'} card-hover flex flex-col items-center text-center h-80 justify-center`}>
-                            {revealed.story ? ( <> <BookOpen size={80} className="text-yellow-600 mb-6" /> <h3 className="text-2xl font-bold text-yellow-800">1. 精彩的故事</h3> <p className="text-lg text-yellow-700 mt-4">劇本是靈魂！<br/>要有主角和冒險。</p> </> ) : ( <> <span className="text-6xl">📝</span> <p className="font-bold text-2xl text-gray-400 mt-4">點我解鎖</p> </> )}
+                            {revealed.story ? ( <> <BookOpen size={64} className="text-yellow-600 mb-6" /> <h3 className="text-2xl font-bold text-yellow-800">1. 精彩的故事</h3> <p className="text-lg text-yellow-700 mt-4">劇本是靈魂！<br/>要有主角和冒險。</p> </> ) : ( <> <span className="text-6xl">📝</span> <p className="font-bold text-2xl text-gray-400 mt-4">點我解鎖</p> </> )}
                         </div>
                         {/* Visual Card */}
                         <div onClick={() => handleReveal('visual')} className={`cursor-pointer p-8 rounded-3xl border-4 ${revealed.visual ? 'bg-pink-100 border-pink-400' : 'bg-white border-gray-200'} card-hover flex flex-col items-center text-center h-80 justify-center`}>
-                            {revealed.visual ? ( <> <Palette size={80} className="text-pink-600 mb-6" /> <h3 className="text-2xl font-bold text-pink-800">2. 漂亮的畫面</h3> <p className="text-lg text-pink-700 mt-4">插畫與風格！<br/>吸引大家的目光。</p> </> ) : ( <> <span className="text-6xl">🎨</span> <p className="font-bold text-2xl text-gray-400 mt-4">點我解鎖</p> </> )}
+                            {revealed.visual ? ( <> <Palette size={64} className="text-pink-600 mb-6" /> <h3 className="text-2xl font-bold text-pink-800">2. 漂亮的畫面</h3> <p className="text-lg text-pink-700 mt-4">插畫與風格！<br/>吸引大家的目光。</p> </> ) : ( <> <span className="text-6xl">🎨</span> <p className="font-bold text-2xl text-gray-400 mt-4">點我解鎖</p> </> )}
                         </div>
                         {/* Sound Card */}
                         <div onClick={() => handleReveal('sound')} className={`cursor-pointer p-8 rounded-3xl border-4 ${revealed.sound ? 'bg-blue-100 border-blue-400' : 'bg-white border-gray-200'} card-hover flex flex-col items-center text-center h-80 justify-center`}>
-                            {revealed.sound ? ( <> <Music size={80} className="text-blue-600 mb-6" /> <h3 className="text-2xl font-bold text-blue-800">3. 動聽的聲音</h3> <p className="text-lg text-blue-700 mt-4">配音與音樂！<br/>讓故事活起來。</p> </> ) : ( <> <span className="text-6xl">🎵</span> <p className="font-bold text-2xl text-gray-400 mt-4">點我解鎖</p> </> )}
+                            {revealed.sound ? ( <> <Music size={64} className="text-blue-600 mb-6" /> <h3 className="text-2xl font-bold text-blue-800">3. 動聽的聲音</h3> <p className="text-lg text-blue-700 mt-4">配音與音樂！<br/>讓故事活起來。</p> </> ) : ( <> <span className="text-6xl">🎵</span> <p className="font-bold text-2xl text-gray-400 mt-4">點我解鎖</p> </> )}
                         </div>
                     </div>
 
                     {allRevealed && (
                         <div className="mt-12 animate-bounce">
                             <button onClick={onNext} className="bg-green-500 hover:bg-green-600 text-white font-bold py-6 px-16 rounded-full text-2xl shadow-xl transform transition hover:scale-105 flex items-center">
-                                下一關：來寫故事吧！ <ChevronRight size={40} className="ml-3" />
+                                下一關：來寫故事吧！ <ChevronRight size={32} className="ml-3" />
                             </button>
                         </div>
                     )}
@@ -161,7 +159,7 @@
                 <div className="max-w-6xl mx-auto bg-white p-12 rounded-[2.5rem] shadow-2xl w-full">
                     <div className="flex justify-between items-center mb-8">
                         <button onClick={onBack} className="text-gray-400 hover:text-gray-600 font-bold flex items-center text-xl">
-                             <ChevronLeft size={32} /> 返回
+                             <ChevronLeft size={28} /> 返回
                         </button>
                         <h2 className="text-4xl font-bold text-center text-purple-600 flex-1">📝 故事製造機 ({page + 1}/2)</h2>
                         <div className="w-16"></div> {/* Spacer */}
@@ -190,7 +188,7 @@
                             </div>
                             <div className="text-right">
                                 <button onClick={() => setPage(1)} disabled={!page0Complete} className={`py-4 px-12 rounded-full font-bold text-xl shadow-md transition ${page0Complete ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-gray-200 text-gray-400'}`}>
-                                    下一頁 <ChevronRight size={30} className="inline ml-1" />
+                                    下一頁 <ChevronRight size={28} className="inline ml-1" />
                                 </button>
                             </div>
                         </div>
@@ -226,10 +224,10 @@
                             
                             <div className="flex justify-between items-center pt-8 border-t-2 border-gray-100">
                                 <button onClick={() => setPage(0)} className="text-gray-500 font-bold px-6 py-3 hover:bg-gray-100 rounded-xl text-xl">
-                                    <ChevronLeft size={30} className="inline mr-2" /> 上一步
+                                    <ChevronLeft size={28} className="inline mr-2" /> 上一步
                                 </button>
                                 <button onClick={handleFinish} disabled={!page1Complete} className={`py-4 px-12 rounded-full text-2xl font-bold shadow-lg transform transition ${page1Complete ? 'bg-green-500 text-white hover:scale-105 hover:bg-green-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
-                                    故事完成！去配樂 <ChevronRight size={30} className="inline ml-2" />
+                                    故事完成！去配樂 <ChevronRight size={28} className="inline ml-2" />
                                 </button>
                             </div>
                         </div>
@@ -270,7 +268,7 @@
                 <div className="max-w-7xl mx-auto w-full">
                     <div className="flex justify-between items-center mb-6">
                          <button onClick={onBack} className="text-gray-400 hover:text-gray-600 font-bold flex items-center text-xl">
-                             <ChevronLeft size={32} /> 修改故事
+                             <ChevronLeft size={28} /> 修改故事
                         </button>
                     </div>
                     
@@ -280,10 +278,10 @@
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
                         {/* Control Panel */}
                         <div className="bg-white p-8 rounded-[2rem] shadow-lg space-y-6">
-                            <h3 className="font-bold text-gray-700 mb-6 flex items-center text-2xl"><Mic size={32} className="mr-3"/> 選擇背景音樂 (BGM)</h3>
-                            <button onClick={() => playMood('happy')} className="w-full flex items-center justify-between p-6 rounded-2xl bg-yellow-50 hover:bg-yellow-100 border-2 border-yellow-200 transition"> <span className="font-bold text-yellow-800 text-xl">😊 輕鬆愉快的音樂</span> <Play size={32} className="text-yellow-600"/> </button>
-                            <button onClick={() => playMood('scary')} className="w-full flex items-center justify-between p-6 rounded-2xl bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 transition"> <span className="font-bold text-indigo-800 text-xl">😨 神秘緊張的音樂</span> <Play size={32} className="text-indigo-600"/> </button>
-                            <button onClick={() => playMood('action')} className="w-full flex items-center justify-between p-6 rounded-2xl bg-red-50 hover:bg-red-100 border-2 border-red-200 transition"> <span className="font-bold text-red-800 text-xl">🏃 熱血冒險的音樂</span> <Play size={32} className="text-red-600"/> </button>
+                            <h3 className="font-bold text-gray-700 mb-6 flex items-center text-2xl"><Mic size={28} className="mr-3"/> 選擇背景音樂 (BGM)</h3>
+                            <button onClick={() => playMood('happy')} className="w-full flex items-center justify-between p-6 rounded-2xl bg-yellow-50 hover:bg-yellow-100 border-2 border-yellow-200 transition"> <span className="font-bold text-yellow-800 text-xl">😊 輕鬆愉快的音樂</span> <Play size={28} className="text-yellow-600"/> </button>
+                            <button onClick={() => playMood('scary')} className="w-full flex items-center justify-between p-6 rounded-2xl bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 transition"> <span className="font-bold text-indigo-800 text-xl">😨 神秘緊張的音樂</span> <Play size={28} className="text-indigo-600"/> </button>
+                            <button onClick={() => playMood('action')} className="w-full flex items-center justify-between p-6 rounded-2xl bg-red-50 hover:bg-red-100 border-2 border-red-200 transition"> <span className="font-bold text-red-800 text-xl">🏃 熱血冒險的音樂</span> <Play size={28} className="text-red-600"/> </button>
                         </div>
 
                         {/* Preview Screen */}
@@ -311,7 +309,7 @@
 
                     <div className="mt-12 text-center">
                         <button disabled={!mood} onClick={() => onNext(mood)} className={`py-6 px-16 rounded-full text-2xl font-bold shadow-lg transform transition ${mood ? 'bg-blue-600 text-white hover:scale-105 hover:bg-blue-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
-                            完成製作！ <CheckCircle size={32} className="inline ml-2" />
+                            完成製作！ <CheckCircle size={28} className="inline ml-2" />
                         </button>
                     </div>
                 </div>
@@ -391,8 +389,8 @@
             return (
                 <div className="flex flex-col items-center justify-center animate-fade-in max-w-5xl mx-auto text-center">
                     <div className="mb-10 relative">
-                        <Star size={200} className="text-yellow-400 absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-spin-slow" />
-                        <Clapperboard size={240} className="text-gray-800 relative z-10" />
+                        <Star size={160} className="text-yellow-400 absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-spin-slow" />
+                        <Clapperboard size={192} className="text-gray-800 relative z-10" />
                     </div>
                     
                     <h2 className="text-5xl font-bold text-gray-800 mb-6">恭喜！你是小小導演了！</h2>
@@ -403,13 +401,13 @@
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full mb-12">
                         <button onClick={downloadCSV} className="flex flex-col items-center justify-center p-10 bg-white border-4 border-green-200 rounded-[2rem] hover:bg-green-50 hover:border-green-400 transition shadow-md group">
-                            <Download size={80} className="text-green-600 mb-4 group-hover:scale-110 transition" />
+                            <Download size={64} className="text-green-600 mb-4 group-hover:scale-110 transition" />
                             <span className="font-bold text-2xl text-green-800">下載檔案 (CSV)</span>
                             <span className="text-lg text-green-600 mt-2">存到這台電腦備份</span>
                         </button>
 
                         <button onClick={uploadToGoogle} disabled={uploading || uploadStatus === 'success'} className={`flex flex-col items-center justify-center p-10 border-4 rounded-[2rem] transition shadow-md group ${uploadStatus === 'success' ? 'bg-blue-100 border-blue-400' : 'bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-400'}`}>
-                            {uploadStatus === 'success' ? <CheckCircle size={80} className="text-blue-600 mb-4"/> : <UploadCloud size={80} className={`text-blue-600 mb-4 ${uploading ? 'animate-bounce' : 'group-hover:scale-110 transition'}`} />}
+                            {uploadStatus === 'success' ? <CheckCircle size={64} className="text-blue-600 mb-4"/> : <UploadCloud size={64} className={`text-blue-600 mb-4 ${uploading ? 'animate-bounce' : 'group-hover:scale-110 transition'}`} />}
                             <span className="font-bold text-2xl text-blue-800">
                                 {uploading ? '上傳中...' : uploadStatus === 'success' ? '上傳成功！' : '上傳到雲端'}
                             </span>
@@ -427,7 +425,7 @@
                     </div>
 
                     <button onClick={onReset} className="bg-gray-800 hover:bg-black text-white font-bold py-6 px-16 rounded-full text-2xl shadow-xl transform transition hover:scale-105 flex items-center">
-                        <Home size={40} className="mr-3" /> 再玩一次
+                        <Home size={32} className="mr-3" /> 再玩一次
                     </button>
                 </div>
             );
@@ -470,7 +468,7 @@
                                 <div className="bg-white p-8 rounded-full shadow-2xl mb-6"> <span className="text-8xl">🎥</span> </div>
                                 <h1 className="text-7xl font-bold text-gray-800 tracking-tight"> 小小導演<span className="text-blue-500">夢工廠</span> </h1>
                                 <p className="text-3xl text-gray-600 max-w-4xl leading-relaxed"> 歡迎來到親子影音繪本營！<br/> 準備好創作屬於你的第一個動態故事了嗎？ </p>
-                                <button onClick={nextStep} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-8 px-20 rounded-full text-4xl shadow-2xl transform transition hover:scale-110 flex items-center"> 開始冒險 <Sparkles size={48} className="ml-4" /> </button>
+                                <button onClick={nextStep} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-8 px-20 rounded-full text-4xl shadow-2xl transform transition hover:scale-110 flex items-center"> 開始冒險 <Sparkles size={40} className="ml-4" /> </button>
                             </div>
                         );
                     case 1: return <Deconstruction onNext={nextStep} />;
@@ -486,7 +484,7 @@
                     <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
                         <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
                             <div className="flex items-center space-x-4 font-bold text-3xl text-gray-800">
-                                <Clapperboard size={48} className="text-blue-600" /> <span>DirectorStudio</span>
+                                <Clapperboard size={40} className="text-blue-600" /> <span>DirectorStudio</span>
                             </div>
                             <div className="flex space-x-4"> {[0, 1, 2, 3, 4].map(i => ( <div key={i} className={`h-3 w-12 rounded-full transition-all duration-300 ${step >= i ? 'bg-blue-500' : 'bg-gray-200'}`} /> ))} </div>
                         </div>
