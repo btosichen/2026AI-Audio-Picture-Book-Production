@@ -105,6 +105,23 @@
         const ExternalLink = (props) => ( <IconBase {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconBase> );
         const List = (props) => ( <IconBase {...props}><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></IconBase> );
 
+        // Component: Step 0 - Intro
+        const Intro = ({ onNext }) => (
+            <div className="flex flex-col items-center justify-center space-y-12 animate-fade-in w-full text-center">
+                <div className="mb-8 relative">
+                    <Star size={160} className="text-yellow-400 absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-spin-slow" />
+                    <Clapperboard size={192} className="text-gray-800 relative z-10 mx-auto" />
+                </div>
+                <h1 className="text-5xl md:text-7xl font-bold text-blue-600 mb-6 drop-shadow-sm">🎬 小小導演夢工廠</h1>
+                <p className="text-2xl md:text-3xl text-gray-600">歡迎來到親子影音繪本營！準備好說你的故事了嗎？</p>
+                <div className="mt-12">
+                    <button onClick={onNext} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-6 px-16 rounded-full text-3xl shadow-xl transform transition hover:scale-105 flex items-center justify-center mx-auto">
+                        <Play size={40} className="mr-4" /> 開始我的旅程！
+                    </button>
+                </div>
+            </div>
+        );
+
         // Component: Step 1 - Introduction / Deconstruction
         const Deconstruction = ({ onNext }) => {
             const [revealed, setRevealed] = useState({ story: false, visual: false, sound: false });
@@ -261,7 +278,7 @@
             );
         };
 
-        // Component: Step 3 - Sound Studio (Formerly Step 4, now moved before Music)
+        // Component: Step 3 - Sound Studio
         const SoundStudio = ({ onNext, onBack, storyData }) => {
             const [mood, setMood] = useState(null); 
             const [isPlaying, setIsPlaying] = useState(false);
@@ -341,7 +358,7 @@
             );
         };
 
-        // Component: Step 4 - Music Creation (Formerly Step 3, now moved to the end)
+        // Component: Step 4 - Music Creation
         const MusicCreation = ({ onNext, onBack }) => {
             return (
                 <div className="max-w-7xl mx-auto w-full animate-fade-in">
@@ -387,42 +404,42 @@
             const [uploading, setUploading] = useState(false);
             const [uploadStatus, setUploadStatus] = useState(null);
 
-            const downloadCSV = () => {
-                const headers = ["Date", "ClassName", "SeatNumber", "Storyteller", "Hero", "Sidekick", "Place", "SettingDetail", "Item", "Action", "Inspiration", "Mood"];
-                const values = [
-                    new Date().toLocaleString(), storyData.className, storyData.seatNumber, storyData.storyteller, storyData.hero, storyData.sidekick, storyData.place, storyData.setting_detail, storyData.item, storyData.action, storyData.inspiration, mood
-                ];
-                const csvRow = values.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(",");
-                const csvContent = "\uFEFF" + headers.join(",") + "\n" + csvRow; 
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", `${storyData.storyteller}_的故事.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            };
-
-            const uploadToGoogle = async () => {
-                if (!GOOGLE_SCRIPT_URL) {
-                    alert("請設定 GOOGLE_SCRIPT_URL");
-                    return;
-                }
+            const uploadToSheet = async () => {
                 setUploading(true);
                 setUploadStatus(null);
-                const data = { ...storyData, mood: mood, date: new Date().toLocaleString() };
+                
+                const payload = {
+                    className: storyData.className,
+                    seatNumber: storyData.seatNumber,
+                    storyteller: storyData.storyteller,
+                    hero: storyData.hero,
+                    sidekick: storyData.sidekick,
+                    place: storyData.place,
+                    setting_detail: storyData.setting_detail,
+                    item: storyData.item,
+                    action: storyData.action,
+                    inspiration: storyData.inspiration,
+                    mood: mood
+                };
 
+                const scriptUrl = GOOGLE_SCRIPT_URL;
+                
                 try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
+                    const response = await fetch(scriptUrl, {
                         method: 'POST',
-                        mode: 'no-cors', 
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify(payload),
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
+                        }
                     });
-                    setUploadStatus('success');
+                    const result = await response.json();
+                    if (result.result === 'success' || result.status === 'success') {
+                        setUploadStatus('success');
+                    } else {
+                        setUploadStatus('error');
+                    }
                 } catch (error) {
-                    console.error("Upload error:", error);
+                    console.error('Upload error:', error);
                     setUploadStatus('error');
                 } finally {
                     setUploading(false);
@@ -430,15 +447,14 @@
             };
 
             return (
-                <div className="flex flex-col items-center justify-center animate-fade-in max-w-7xl mx-auto text-center w-full relative">
-                    {/* Back Button */}
+                <div className="max-w-5xl mx-auto py-12 px-6 text-center animate-fade-in relative">
                     <button onClick={onBack} className="absolute top-0 left-0 text-gray-400 hover:text-gray-600 font-bold flex items-center text-xl">
                          <ChevronLeft size={28} /> 返回音樂創作
                     </button>
 
                     <div className="mb-8 mt-12 relative">
                         <Star size={160} className="text-yellow-400 absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-spin-slow" />
-                        <Clapperboard size={192} className="text-gray-800 relative z-10" />
+                        <Clapperboard size={192} className="text-gray-800 relative z-10 mx-auto" />
                     </div>
                     
                     <h2 className="text-5xl font-bold text-gray-800 mb-6">恭喜！你是小小導演了！</h2>
@@ -448,60 +464,70 @@
                         你的作品已經完成囉！
                     </p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mb-16 mx-auto">
-                        <button onClick={downloadCSV} className="flex flex-col items-center justify-center p-10 bg-white border-4 border-green-200 rounded-[2rem] hover:bg-green-50 hover:border-green-400 transition shadow-md group">
-                            <Download size={64} className="text-green-600 mb-4 group-hover:scale-110 transition" />
-                            <span className="font-bold text-2xl text-green-800">下載檔案 (CSV)</span>
-                            <span className="text-lg text-green-600 mt-2">存到這台電腦備份</span>
-                        </button>
-
-                        <button onClick={uploadToGoogle} disabled={uploading || uploadStatus === 'success'} className={`flex flex-col items-center justify-center p-10 border-4 rounded-[2rem] transition shadow-md group ${uploadStatus === 'success' ? 'bg-blue-100 border-blue-400' : 'bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-400'}`}>
-                            {uploadStatus === 'success' ? <CheckCircle size={64} className="text-blue-600 mb-4"/> : <UploadCloud size={64} className={`text-blue-600 mb-4 ${uploading ? 'animate-bounce' : 'group-hover:scale-110 transition'}`} />}
-                            <span className="font-bold text-2xl text-blue-800">
-                                {uploading ? '上傳中...' : uploadStatus === 'success' ? '上傳成功！' : '上傳到雲端'}
+                    <div className="flex justify-center w-full max-w-2xl mb-12 mx-auto">
+                        <button 
+                            onClick={uploadToSheet} 
+                            disabled={uploading || uploadStatus === 'success'}
+                            className={`flex flex-col items-center justify-center p-10 border-4 rounded-[2rem] transition shadow-md w-full max-w-md
+                                ${uploadStatus === 'success' 
+                                    ? 'bg-blue-50 border-blue-400 text-blue-700' 
+                                    : 'bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-400 group'}`}
+                        >
+                            {uploading ? (
+                                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mb-4"></div>
+                            ) : uploadStatus === 'success' ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 text-blue-500 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 text-blue-400 group-hover:text-blue-600 group-hover:scale-110 transition-transform mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            )}
+                            <span className="text-2xl font-bold mb-2">
+                                {uploading ? '傳送中...' : uploadStatus === 'success' ? '傳送成功！' : '傳送給老師'}
                             </span>
-                            <span className="text-lg text-blue-600 mt-2">傳給老師的試算表</span>
+                            <span className="text-gray-500">
+                                {uploading ? '請稍候' : uploadStatus === 'success' ? '資料已存入試算表' : '點擊上傳你的故事資料'}
+                            </span>
                         </button>
                     </div>
+                    
+                    {/* 錯誤提示 */}
+                    {uploadStatus === 'error' && (
+                        <div className="text-red-500 font-bold mb-8 text-xl bg-red-50 p-4 rounded-xl border border-red-200 inline-block">
+                            ❌ 傳送失敗，請檢查網路連線或稍後再試。
+                        </div>
+                    )}
 
-                    <div className="w-full text-left mb-12">
-                        <h3 className="font-bold text-4xl text-center text-purple-600 mb-10 border-b-2 border-purple-200 pb-4 inline-block w-full">✨ 接下來：AI 魔法延伸教學 ✨</h3>
-                        <div className="grid grid-cols-1 gap-8">
-                            <div className="bg-white p-8 rounded-[2rem] shadow-lg border-l-8 border-purple-400 hover:shadow-xl transition">
-                                <h4 className="flex items-center text-2xl font-bold text-purple-700 mb-4">
-                                    <span className="bg-purple-100 p-2 rounded-lg mr-3">1</span> 使用 AI 讓故事更具體
-                                </h4>
-                                <p className="text-gray-600 mb-4 text-lg">在網頁填寫的故事只是大綱，讓 AI 幫你變成 300 字的溫馨故事吧！</p>
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
-                                    <p className="font-bold text-gray-700 mb-2">🤖 推薦工具：<a href="https://chatgpt.com/" target="_blank" className="text-blue-600 underline hover:text-blue-800">ChatGPT</a> 或 Google Gemini</p>
-                                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                        <div className="bg-white p-8 rounded-[2rem] shadow-lg border-t-8 border-yellow-400 hover:shadow-xl transition">
+                            <h4 className="flex items-center text-2xl font-bold text-yellow-700 mb-4">
+                                <span className="bg-yellow-100 p-2 rounded-lg mr-3">1</span> 故事劇本
+                            </h4>
+                            <p className="text-gray-600 mb-4 text-lg">你已經完成了最棒的故事基礎！</p>
+                        </div>
+                        
+                        <div className="bg-white p-8 rounded-[2rem] shadow-lg border-t-8 border-pink-400 hover:shadow-xl transition">
+                            <h4 className="flex items-center text-2xl font-bold text-pink-700 mb-4">
+                                <span className="bg-pink-100 p-2 rounded-lg mr-3">2</span> 產生圖片
+                            </h4>
+                            <p className="text-gray-600 mb-4 text-lg">根據故事，使用 AI 工具畫出精美的插圖。</p>
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
+                                <p className="font-bold text-gray-700 mb-2">🎨 推薦工具：<br/><a href="https://www.bing.com/images/create" target="_blank" className="text-blue-600 underline hover:text-blue-800 break-all">Bing Image Creator</a></p>
                             </div>
+                        </div>
 
-                            <div className="bg-white p-8 rounded-[2rem] shadow-lg border-l-8 border-pink-400 hover:shadow-xl transition">
-                                <h4 className="flex items-center text-2xl font-bold text-pink-700 mb-4">
-                                    <span className="bg-pink-100 p-2 rounded-lg mr-3">2</span> 使用 AI 畫出每一頁
-                                </h4>
-                                <p className="text-gray-600 mb-4 text-lg">把文字變成真的繪本畫面。</p>
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
-                                    <p className="font-bold text-gray-700 mb-2">🎨 推薦工具：<a href="https://www.bing.com/images/create" target="_blank" className="text-blue-600 underline hover:text-blue-800">Bing Image Creator</a></p>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-8 rounded-[2rem] shadow-lg border-l-8 border-blue-400 hover:shadow-xl transition">
-                                <h4 className="flex items-center text-2xl font-bold text-blue-700 mb-4">
-                                    <span className="bg-blue-100 p-2 rounded-lg mr-3">3</span> 製作成有聲繪本
-                                </h4>
-                                <p className="text-gray-600 mb-4 text-lg">結合聲音與畫面，變成真正的影片！</p>
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
-                                    <p className="font-bold text-gray-700 mb-2">🎬 剪輯軟體：Canva</p>
-                                </div>
+                        <div className="bg-white p-8 rounded-[2rem] shadow-lg border-t-8 border-blue-400 hover:shadow-xl transition">
+                            <h4 className="flex items-center text-2xl font-bold text-blue-700 mb-4">
+                                <span className="bg-blue-100 p-2 rounded-lg mr-3">3</span> 製作繪本
+                            </h4>
+                            <p className="text-gray-600 mb-4 text-lg">結合聲音與畫面，變成真正的影片！</p>
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
+                                <p className="font-bold text-gray-700 mb-2">🎬 剪輯軟體：Canva</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="mb-12 border-t-2 border-gray-200 pt-8 w-full">
                          <div className="flex justify-between items-center bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                             <div>
+                             <div className="text-left">
                                 <h3 className="font-bold text-2xl text-gray-800 flex items-center">
                                     <List size={28} className="mr-3 text-gray-600" />
                                     老師專區 / 成果檢視
@@ -514,7 +540,7 @@
                          </div>
                     </div>
 
-                    <button onClick={onReset} className="bg-gray-800 hover:bg-black text-white font-bold py-6 px-16 rounded-full text-2xl shadow-xl transform transition hover:scale-105 flex items-center mb-12">
+                    <button onClick={onReset} className="bg-gray-800 hover:bg-black text-white font-bold py-6 px-16 rounded-full text-2xl shadow-xl transform transition hover:scale-105 flex items-center mx-auto mb-12">
                         <Home size={32} className="mr-3" /> 再玩一次
                     </button>
                 </div>
@@ -524,7 +550,7 @@
         // Main App Component
         const App = () => {
             const [step, setStep] = useState(0); 
-            // 0:Intro, 1:Deconstruction, 2:Story, 3:Sound, 4:Music(New), 5:Conclusion
+            // 0:Intro, 1:Deconstruction, 2:Story, 3:Sound, 4:Music, 5:Conclusion
             const [storyData, setStoryData] = useState({ className: '', seatNumber: '', storyteller: '', hero: '', sidekick: '', place: '', setting_detail: '', item: '', action: '', inspiration: '' });
             const [finalMood, setFinalMood] = useState('');
 
@@ -544,35 +570,45 @@
 
             const renderStep = () => {
                 switch(step) {
-                    case 0:
-                        return (
-                            <div className="flex flex-col items-center justify-center h-full text-center space-y-12 animate-fade-in py-16">
-                                <div className="bg-white p-8 rounded-full shadow-2xl mb-6"> <span className="text-8xl">🎥</span> </div>
-                                <h1 className="text-7xl font-bold text-gray-800 tracking-tight"> 小小導演<span className="text-blue-500">夢工廠</span> </h1>
-                                <p className="text-3xl text-gray-600 max-w-4xl leading-relaxed"> 歡迎來到親子影音繪本營！<br/> 準備好創作屬於你的第一個動態故事了嗎？ </p>
-                                <button onClick={nextStep} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-8 px-20 rounded-full text-4xl shadow-2xl transform transition hover:scale-110 flex items-center"> 開始冒險 <Sparkles size={40} className="ml-4" /> </button>
-                            </div>
-                        );
+                    case 0: return <Intro onNext={nextStep} />;
                     case 1: return <Deconstruction onNext={nextStep} />;
                     case 2: return <StoryBuilder onNext={nextStep} onBack={prevStep} setStoryData={setStoryData} initialData={storyData} />;
-                    case 3: return <SoundStudio onNext={nextStep} onBack={prevStep} storyData={storyData} />;
-                    case 4: return <MusicCreation onNext={nextStep} onBack={prevStep} />;
+                    case 3: return <SoundStudio onNext={goToConclusion} onBack={prevStep} storyData={storyData} />;
+                    case 4: return <MusicCreation onNext={nextStep} onBack={() => setStep(3)} />;
                     case 5: return <Conclusion onReset={resetApp} onBack={prevStep} storyData={storyData} mood={finalMood} />;
-                    default: return <div>Error</div>;
+                    default: return <Intro onNext={nextStep} />;
                 }
             };
 
             return (
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col">
-                    <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
-                        <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
-                            <div className="flex items-center space-x-4 font-bold text-3xl text-gray-800">
-                                <Clapperboard size={40} className="text-blue-600" /> <span>DirectorStudio</span>
+                <div className="min-h-screen flex flex-col bg-gray-50 text-gray-800 font-sans">
+                    <header className="bg-white shadow-sm sticky top-0 z-50">
+                        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-blue-600 font-bold text-xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.4-2.2 1.5-2.5l13.5-4c1.1-.3 2.2.4 2.5 1.5l1 2.6z"></path><path d="m2.6 10.4-.9-2.4"></path><path d="m5.2 9.6-.9-2.4"></path><path d="m7.8 8.7-.9-2.4"></path><path d="m10.4 7.9-.9-2.4"></path><path d="m13 7.1-.9-2.4"></path><path d="m15.6 6.2-.9-2.4"></path><path d="m18.2 5.4-.9-2.4"></path><path d="m20.8 4.6-.9-2.4"></path><path d="M4 11h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V11z"></path></svg>
+                                <span>小小導演夢工廠</span>
                             </div>
-                            <div className="flex space-x-4"> {[0, 1, 2, 3, 4, 5].map(i => ( <div key={i} className={`h-3 w-12 rounded-full transition-all duration-300 ${step >= i ? 'bg-blue-500' : 'bg-gray-200'}`} /> ))} </div>
+                            
+                            <a 
+                                href="https://btosichen.github.io/2026_G9_AI-Audio-Picture-Book/" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 text-sm md:text-base border-2 border-pink-200"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                前往評量與反思
+                            </a>
+                        </div>
+                        {/* Progress Bar */}
+                        <div className="h-2 bg-gray-100 flex">
+                            {[0, 1, 2, 3, 4, 5].map(i => (
+                                <div key={i} className={`flex-1 transition-all duration-300 ${step >= i ? 'bg-blue-500' : 'bg-transparent'}`} />
+                            ))}
                         </div>
                     </header>
-                    <main className="flex-grow container mx-auto px-6 py-12 flex flex-col justify-center"> {renderStep()} </main>
+                    <main className="flex-grow container mx-auto px-6 py-12 flex flex-col justify-center"> 
+                        {renderStep()} 
+                    </main>
                     <footer className="text-center py-8 text-gray-400 text-xl">
                         <div>&copy; 2026 親子影音繪本營隊教材 | Designed for Kids & Parents</div>
                         <div className="mt-2 text-lg">臺北市立陽明高中國中部 陳政川老師設計</div>
