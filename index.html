@@ -159,7 +159,7 @@
                 onNext();
             };
 
-            const page0Complete = inputs.storyteller && inputs.hero;
+            const page0Complete = inputs.className && inputs.seatNumber && inputs.storyteller && inputs.hero;
             const page1Complete = inputs.place && inputs.item && inputs.action;
 
             return (
@@ -177,17 +177,35 @@
                             <div className="bg-purple-50 p-8 rounded-3xl border-2 border-purple-100">
                                 <h3 className="font-bold text-2xl text-purple-800 mb-6 border-b-2 border-purple-200 pb-4">🧙‍♂️ 角色設定篇</h3>
                                 <div className="grid grid-cols-1 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div>
+                                            <label className="block text-gray-700 font-bold mb-3 text-xl">1. 你的班級</label>
+                                            <select name="className" value={inputs.className} onChange={handleChange} className="w-full p-4 text-xl border-4 border-purple-200 rounded-2xl focus:border-purple-500 focus:outline-none bg-white">
+                                                <option value="">請選擇班級...</option>
+                                                <option value="901">901 班</option>
+                                                <option value="902">902 班</option>
+                                                <option value="903">903 班</option>
+                                                <option value="904">904 班</option>
+                                                <option value="905">905 班</option>
+                                                <option value="906">906 班</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-bold mb-3 text-xl">2. 你的座號</label>
+                                            <input type="number" name="seatNumber" value={inputs.seatNumber} onChange={handleChange} className="w-full p-4 text-xl border-4 border-purple-200 rounded-2xl focus:border-purple-500 focus:outline-none bg-white" placeholder="例：5" min="1" max="50" />
+                                        </div>
+                                    </div>
                                     <div>
-                                        <label className="block text-gray-700 font-bold mb-3 text-xl">1. 說故事的人 (你的名字)</label>
+                                        <label className="block text-gray-700 font-bold mb-3 text-xl">3. 說故事的人 (你的名字)</label>
                                         <input type="text" name="storyteller" value={inputs.storyteller} onChange={handleChange} className="w-full p-4 text-xl border-4 border-purple-200 rounded-2xl focus:border-purple-500 focus:outline-none bg-white" placeholder="例：王小明" />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div>
-                                            <label className="block text-gray-700 font-bold mb-3 text-xl">2. 故事主角是誰？</label>
+                                            <label className="block text-gray-700 font-bold mb-3 text-xl">4. 故事主角是誰？</label>
                                             <input type="text" name="hero" value={inputs.hero} onChange={handleChange} className="w-full p-4 text-xl border-4 border-purple-200 rounded-2xl focus:border-purple-500 focus:outline-none bg-white" placeholder="例：勇敢的小恐龍" />
                                         </div>
                                         <div>
-                                            <label className="block text-gray-700 font-bold mb-3 text-xl">3. 他的好夥伴 (配角)？</label>
+                                            <label className="block text-gray-700 font-bold mb-3 text-xl">5. 他的好夥伴 (配角)？</label>
                                             <input type="text" name="sidekick" value={inputs.sidekick} onChange={handleChange} className="w-full p-4 text-xl border-4 border-purple-200 rounded-2xl focus:border-purple-500 focus:outline-none bg-white" placeholder="例：愛唱歌的機器人" />
                                         </div>
                                     </div>
@@ -205,26 +223,26 @@
                                 <h3 className="font-bold text-2xl text-blue-800 mb-6 border-b-2 border-blue-200 pb-4">🌍 世界與冒險篇</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                                     <div>
-                                        <label className="block text-gray-700 font-bold mb-3 text-xl">4. 在哪裡探險？</label>
+                                        <label className="block text-gray-700 font-bold mb-3 text-xl">6. 在哪裡探險？</label>
                                         <input type="text" name="place" value={inputs.place} onChange={handleChange} className="w-full p-4 text-xl border-4 border-blue-200 rounded-2xl focus:border-blue-500 focus:outline-none bg-white" placeholder="例：充滿糖果的森林" />
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 font-bold mb-3 text-xl">5. 背景有什麼特別的？</label>
+                                        <label className="block text-gray-700 font-bold mb-3 text-xl">7. 背景有什麼特別的？</label>
                                         <input type="text" name="setting_detail" value={inputs.setting_detail} onChange={handleChange} className="w-full p-4 text-xl border-4 border-blue-200 rounded-2xl focus:border-blue-500 focus:outline-none bg-white" placeholder="例：天空是綠色的" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                                     <div>
-                                        <label className="block text-gray-700 font-bold mb-3 text-xl">6. 發現了什麼寶物？</label>
+                                        <label className="block text-gray-700 font-bold mb-3 text-xl">8. 發現了什麼寶物？</label>
                                         <input type="text" name="item" value={inputs.item} onChange={handleChange} className="w-full p-4 text-xl border-4 border-blue-200 rounded-2xl focus:border-blue-500 focus:outline-none bg-white" placeholder="例：發光的寶石" />
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 font-bold mb-3 text-xl">7. 最後做了什麼？</label>
+                                        <label className="block text-gray-700 font-bold mb-3 text-xl">9. 最後做了什麼？</label>
                                         <input type="text" name="action" value={inputs.action} onChange={handleChange} className="w-full p-4 text-xl border-4 border-blue-200 rounded-2xl focus:border-blue-500 focus:outline-none bg-white" placeholder="例：開心地跳舞" />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 font-bold mb-3 text-xl">8. 這個故事給我的啟發？</label>
+                                    <label className="block text-gray-700 font-bold mb-3 text-xl">10. 這個故事給我的啟發？</label>
                                     <textarea name="inspiration" value={inputs.inspiration} onChange={handleChange} className="w-full p-4 text-xl border-4 border-blue-200 rounded-2xl focus:border-blue-500 focus:outline-none bg-white h-32" placeholder="例：只要勇敢嘗試，就能發現驚喜！"></textarea>
                                 </div>
                             </div>
@@ -370,9 +388,9 @@
             const [uploadStatus, setUploadStatus] = useState(null);
 
             const downloadCSV = () => {
-                const headers = ["Storyteller", "Hero", "Sidekick", "Place", "SettingDetail", "Item", "Action", "Inspiration", "Mood", "Date"];
+                const headers = ["Date", "ClassName", "SeatNumber", "Storyteller", "Hero", "Sidekick", "Place", "SettingDetail", "Item", "Action", "Inspiration", "Mood"];
                 const values = [
-                    storyData.storyteller, storyData.hero, storyData.sidekick, storyData.place, storyData.setting_detail, storyData.item, storyData.action, storyData.inspiration, mood, new Date().toLocaleString()
+                    new Date().toLocaleString(), storyData.className, storyData.seatNumber, storyData.storyteller, storyData.hero, storyData.sidekick, storyData.place, storyData.setting_detail, storyData.item, storyData.action, storyData.inspiration, mood
                 ];
                 const csvRow = values.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(",");
                 const csvContent = "\uFEFF" + headers.join(",") + "\n" + csvRow; 
@@ -425,6 +443,7 @@
                     
                     <h2 className="text-5xl font-bold text-gray-800 mb-6">恭喜！你是小小導演了！</h2>
                     <p className="text-2xl text-gray-600 mb-10">
+                        班級座號：<span className="text-blue-600 font-bold">{storyData.className} 班 {storyData.seatNumber} 號</span><br/>
                         故事作者：<span className="text-blue-600 font-bold">{storyData.storyteller}</span><br/>
                         你的作品已經完成囉！
                     </p>
@@ -506,7 +525,7 @@
         const App = () => {
             const [step, setStep] = useState(0); 
             // 0:Intro, 1:Deconstruction, 2:Story, 3:Sound, 4:Music(New), 5:Conclusion
-            const [storyData, setStoryData] = useState({ storyteller: '', hero: '', sidekick: '', place: '', setting_detail: '', item: '', action: '', inspiration: '' });
+            const [storyData, setStoryData] = useState({ className: '', seatNumber: '', storyteller: '', hero: '', sidekick: '', place: '', setting_detail: '', item: '', action: '', inspiration: '' });
             const [finalMood, setFinalMood] = useState('');
 
             const nextStep = () => setStep(s => s + 1);
@@ -519,7 +538,7 @@
 
             const resetApp = () => {
                 setStep(0);
-                setStoryData({ storyteller: '', hero: '', sidekick: '', place: '', setting_detail: '', item: '', action: '', inspiration: '' });
+                setStoryData({ className: '', seatNumber: '', storyteller: '', hero: '', sidekick: '', place: '', setting_detail: '', item: '', action: '', inspiration: '' });
                 setFinalMood('');
             };
 
